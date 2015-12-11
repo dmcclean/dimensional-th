@@ -1,22 +1,34 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module Numeric.Units.Dimensional.TH
 (
+  -- * Fixed-Point Quantities
+  fixedPointType
   -- * Dimensions
-  dimensionType
+, dimensionType
   -- * Raw ExactPi Splices
 , exactPiType
 )
 where
 
-import Data.Attoparsec.Text
 import Data.ExactPi
 import qualified Data.ExactPi.TypeLevel as E
 import Data.Ratio
 import Language.Haskell.TH
 import Numeric.Units.Dimensional.Dimensions
+import Numeric.Units.Dimensional.Dynamic
 import qualified Numeric.NumType.DK.Integers as Z
+
+-- placeholder until we can add the correct import
+type SQuantity (q :: E.ExactPi') (d :: Dimension) = String
+
+fixedPointType :: AnyQuantity ExactPi -> Q Type
+fixedPointType q = [t| SQuantity $(v') $(d') |]
+  where
+    d' = dimensionType . dimension $ q
+    v' = exactPiType 0 -- placeholder until we can add /~ (demoteUnit siUnit)
 
 -- | Encodes a term-level 'Dimension'' as a type-level 'Dimension'.
 dimensionType :: Dimension' -> Q Type
