@@ -24,11 +24,17 @@ import qualified Numeric.NumType.DK.Integers as Z
 -- placeholder until we can add the correct import
 type SQuantity (q :: E.ExactPi') (d :: Dimension) = String
 
+-- | Encodes a term-level 'AnyQuantity' with an 'ExactPi' value as a fixed point type.
+-- The fixed point type will define the scale factor and dimension but leave the representation type open.
+--
+-- The 'ExactPi' value must be exact and strictly positive to ensure that it has a type-level
+-- representation as produced by 'exactPiType'.
 fixedPointType :: AnyQuantity ExactPi -> Q Type
-fixedPointType q = [t| SQuantity $(v') $(d') |]
+fixedPointType q | Just v <- q /~ (siUnit d) = [t| SQuantity $(exactPiType v) $(d') |]
+                 | otherwise = fail "Should be unreachable. Unable to divide AnyQuantity by the SI unit of its dimension."
   where
-    d' = dimensionType . dimension $ q
-    v' = exactPiType 0 -- placeholder until we can add /~ (demoteUnit siUnit)
+    d = dimension q
+    d' = dimensionType d
 
 -- | Encodes a term-level 'Dimension'' as a type-level 'Dimension'.
 dimensionType :: Dimension' -> Q Type
