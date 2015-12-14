@@ -25,8 +25,8 @@ source-repository head
 
 library
   build-depends:       base >=4.8 && <4.9,
-                       attoparsec >= 0.13,
                        dimensional >= 1.0.1,
+                       dimensional-parsing,
                        exact-pi >= 0.2.1.1 && < 0.5,
                        numtype-dk >= 0.5,
                        template-haskell,
