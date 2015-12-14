@@ -19,10 +19,8 @@ import Data.Ratio
 import Language.Haskell.TH
 import Numeric.Units.Dimensional.Dimensions
 import Numeric.Units.Dimensional.Dynamic
+import Numeric.Units.Dimensional.FixedPoint (SQuantity)
 import qualified Numeric.NumType.DK.Integers as Z
-
--- placeholder until we can add the correct import
-type SQuantity (q :: E.ExactPi') (d :: Dimension) = String
 
 -- | Encodes a term-level 'AnyQuantity' with an 'ExactPi' value as a fixed point type.
 -- The fixed point type will define the scale factor and dimension but leave the representation type open.
