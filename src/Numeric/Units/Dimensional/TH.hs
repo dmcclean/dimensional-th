@@ -4,12 +4,14 @@
 
 module Numeric.Units.Dimensional.TH
 (
-  -- * Fixed-Point Quantities
+  -- * Quantities
   fixedPointType
+, quantityType
   -- * Dimensions
 , dimensionType
-  -- * Raw ExactPi Splices
+  -- * Raw Type-Level Number Splices
 , exactPiType
+, integerType
 )
 where
 
@@ -17,6 +19,7 @@ import Data.ExactPi
 import qualified Data.ExactPi.TypeLevel as E
 import Data.Ratio
 import Language.Haskell.TH
+import Numeric.Units.Dimensional (Quantity)
 import Numeric.Units.Dimensional.Dimensions
 import Numeric.Units.Dimensional.Dynamic
 import Numeric.Units.Dimensional.FixedPoint (SQuantity)
@@ -28,11 +31,15 @@ import qualified Numeric.NumType.DK.Integers as Z
 -- The 'ExactPi' value must be exact and strictly positive to ensure that it has a type-level
 -- representation as produced by 'exactPiType'.
 fixedPointType :: AnyQuantity ExactPi -> Q Type
-fixedPointType q | Just v <- q /~ (siUnit d) = [t| SQuantity $(exactPiType v) $(d') |]
+fixedPointType q | Just v <- q /~ (siUnit d) = [t| SQuantity $(exactPiType v) $(dimensionType d) |]
                  | otherwise = fail "Should be unreachable. Unable to divide AnyQuantity by the SI unit of its dimension."
   where
     d = dimension q
-    d' = dimensionType d
+
+-- | Encodes a term-level 'Dimension'' as a type-level 'Quantity' of that dimension.
+-- The representation type parameter is left open, so the result has kind @* -> *@.
+quantityType :: Dimension' -> Q Type
+quantityType d = [t| Quantity $(dimensionType d) |]
 
 -- | Encodes a term-level 'Dimension'' as a type-level 'Dimension'.
 dimensionType :: Dimension' -> Q Type
@@ -57,6 +64,7 @@ exactPiType (Exact z q) | q > 0 = [t| 'E.ExactPi' $(z') $(p') $(q') |]
     q' = litT . numTyLit $ denominator q
 exactPiType _ = fail "Only exact positive values can be encoded as exact pi types."
 
+-- | Encodes a term-level integer as a type-level 'Z.TypeInt'.
 integerType :: (Integral a) => a -> Q Type
 integerType = f . fromIntegral
   where    
