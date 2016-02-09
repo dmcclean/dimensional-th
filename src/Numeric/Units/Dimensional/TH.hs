@@ -9,20 +9,27 @@ module Numeric.Units.Dimensional.TH
 , quantityType
   -- * Dimensions
 , dimensionType
+  -- * Quasi-Quotes
+, fixed
   -- * Raw Type-Level Number Splices
 , exactPiType
 , integerType
 )
 where
 
+import Data.Attoparsec.Text
 import Data.ExactPi
 import qualified Data.ExactPi.TypeLevel as E
 import Data.Ratio
+import Data.Text (pack)
 import Language.Haskell.TH
+import Language.Haskell.TH.Quote
 import Numeric.Units.Dimensional (Quantity)
 import Numeric.Units.Dimensional.Dimensions
 import Numeric.Units.Dimensional.Dynamic
 import Numeric.Units.Dimensional.FixedPoint (SQuantity)
+import Numeric.Units.Dimensional.Parsing.UCUM (allUcumUnits)
+import Numeric.Units.Dimensional.Parsing.Units (expr, whiteSpace)
 import qualified Numeric.NumType.DK.Integers as Z
 
 -- | Encodes a term-level 'AnyQuantity' with an 'ExactPi' value as a fixed point type.
@@ -90,3 +97,17 @@ integerType = f . fromIntegral
     f x | x > 9    = [t| 'Z.Pos10Plus $(litT . numTyLit $ (x - 10)) |]
         | x < (-9) = [t| 'Z.Neg10Minus $(litT . numTyLit $ (-10 - x)) |]
         | otherwise = error "Should be unreachable."
+
+fixed :: QuasiQuoter
+fixed = QuasiQuoter
+        {
+          quoteType = \s -> do
+                              let q = parseQuantity s
+                              case q of
+                                Nothing -> fail "Unable to parse quantity in fixed point type definition."
+                                Just q' -> fixedPointType q'
+        }
+  where
+    parseQuantity :: String -> Maybe (AnyQuantity ExactPi)
+    parseQuantity = either (const Nothing) promoteQuantity . parseOnly (whiteSpace *> expr allUcumUnits <* endOfInput) . pack
+     --fmap promoteQuantity . either (const Nothing) id . parseOnly ((expr allUcumUnits) <* endOfInput) . pack
