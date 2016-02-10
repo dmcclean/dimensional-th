@@ -106,8 +106,10 @@ fixed = QuasiQuoter
                               case q of
                                 Nothing -> fail "Unable to parse quantity in fixed point type definition."
                                 Just q' -> fixedPointType q'
+        , quoteExp = fail "fixed: Invalid quasiquotation in expression context."
+        , quotePat = fail "fixed: Invalid quasiquotation in pattern context."
+        , quoteDec = fail "fixed: Invalid quasiquotation in declaration context."
         }
   where
     parseQuantity :: String -> Maybe (AnyQuantity ExactPi)
     parseQuantity = either (const Nothing) promoteQuantity . parseOnly (whiteSpace *> expr allUcumUnits <* endOfInput) . pack
-     --fmap promoteQuantity . either (const Nothing) id . parseOnly ((expr allUcumUnits) <* endOfInput) . pack
