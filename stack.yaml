@@ -7,7 +7,7 @@ resolver: lts-5.2
 packages:
 - '.'
 - '..\dimensional'
-- '..\dimensional-parsing'
+- '..\dimensional-parsers'
 
 # Packages to be pulled from upstream that are not in the resolver (e.g., acme-missiles-0.3)
 extra-deps: []
