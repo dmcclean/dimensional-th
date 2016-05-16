@@ -98,14 +98,18 @@ integerType = f . fromIntegral
         | x < (-9) = [t| 'Z.Neg10Minus $(litT . numTyLit $ (-10 - x)) |]
         | otherwise = error "Should be unreachable."
 
+-- | Quasi-quotes a fixed point type.
+--
+-- >>> type TenthOfKnot = [fixed| 0.1 knot |]
+-- >>> Quantity 371 :: TenthOfKnot Int
+-- Quantity 371 {- 19.08588888888889 m s^-1 -}
 fixed :: QuasiQuoter
 fixed = QuasiQuoter
         {
           quoteType = \s -> do
-                              let q = parseQuantity s
-                              case q of
+                              case parseQuantity s of
                                 Nothing -> fail "Unable to parse quantity in fixed point type definition."
-                                Just q' -> fixedPointType q'
+                                Just q -> fixedPointType q
         , quoteExp = fail "fixed: Invalid quasiquotation in expression context."
         , quotePat = fail "fixed: Invalid quasiquotation in pattern context."
         , quoteDec = fail "fixed: Invalid quasiquotation in declaration context."
